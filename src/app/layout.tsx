@@ -31,6 +31,9 @@ export const metadata: Metadata = {
     "What's in cinemas, what's on streaming, and what's coming — in one page.",
   applicationName: APP.name,
   creator: APP.brand,
+  authors: [{ name: APP.brand, url: APP.instagramUrl }],
+  // Tells Instagram/X which account to credit when the link is shared.
+  other: { "instagram:creator": APP.brand },
   openGraph: {
     title: `${APP.name} — ${APP.tagline}`,
     description:
@@ -38,6 +41,7 @@ export const metadata: Metadata = {
     siteName: APP.name,
     type: "website",
   },
+  twitter: { card: "summary_large_image", creator: APP.brand },
   robots: { index: true, follow: true },
 };
 

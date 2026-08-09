@@ -19,9 +19,22 @@ export const REVIEW_LIMITS = {
   perIpPerHour: 30,
 } as const;
 
+/**
+ * Brand identity. Every place the handle or a social link appears reads from
+ * here, so correcting one of these values updates the header, the footer, the
+ * title pages and the page metadata at once.
+ *
+ * ⚠️ `instagramUrl` is DERIVED FROM THE HANDLE, not confirmed. Instagram
+ * usernames are not guaranteed to match a display handle — `professorsk`,
+ * `professor_sk` and `professorsk_` are all different accounts, and a public
+ * product linking to the wrong one is worse than linking to none. Open the real
+ * profile, copy the address bar, and paste it below.
+ */
 export const APP = {
   name: "Airtime",
   tagline: "What the world is playing, right now.",
   brand: "@professorSK",
+  handle: "professorSK",
+  instagramUrl: "https://www.instagram.com/professorsk/",
   defaultCountry: "IN",
 } as const;

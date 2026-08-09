@@ -4,6 +4,7 @@ import { SUPPORTED_COUNTRIES } from "@/lib/prefs/types";
 import { GENRES } from "@/lib/boards/music";
 import { PODCAST_SHOWS } from "@/lib/core/config";
 import { CommandPalette, type Command } from "./CommandPalette";
+import { BrandCredit, InstagramLink } from "./Brand";
 
 /**
  * The board's chrome. Two things live here that the design depends on: the
@@ -77,6 +78,11 @@ export function Header({ country }: { readonly country: string }) {
 
         <div className="flex items-center gap-2">
           <CommandPalette commands={buildCommands(country)} />
+          <InstagramLink
+            showHandle={false}
+            size={16}
+            className="border border-surface-hi px-2.5 py-[7px] text-muted hover:border-flare"
+          />
           <Link
             href="/preferences"
             className="border border-surface-hi px-3 py-1.5 text-[12px] text-muted transition-colors hover:border-gold hover:text-gold"
@@ -230,6 +236,7 @@ export function Footer() {
         Airtime&rsquo;s own rankings and are not IMDb&rsquo;s or Rotten
         Tomatoes&rsquo; lists.
       </p>
+      <BrandCredit className="mb-3" />
       <div className="flex flex-wrap gap-x-5 gap-y-2 text-[12px]">
         <Link href="/preferences" className="text-muted hover:text-gold">
           Preferences &amp; privacy
@@ -237,7 +244,7 @@ export function Footer() {
         <Link href="/status" className="text-muted hover:text-gold">
           Source status
         </Link>
-        <span className="text-muted">{APP.brand}</span>
+        <InstagramLink className="text-muted" />
       </div>
     </footer>
   );
