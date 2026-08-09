@@ -179,8 +179,8 @@ function GenreChips({
   readonly qs: string;
 }) {
   return (
-    <nav aria-label="Music genre" className="px-[var(--board-gutter)] pt-4">
-      <ul className="flex flex-wrap gap-2">
+    <nav aria-label="Music genre" className="pt-4">
+      <ul className="chip-row">
         <li>
           <Link
             href={`/?mode=music${qs}`}
@@ -374,7 +374,7 @@ async function MusicRail({
           body={board.note ?? "This chart came back empty."}
         />
       ) : (
-        <div className="rail">
+        <div className="rail-list">
           {board.tracks.map((track) => (
             <TrackCard key={track.key} track={track} stale={board.stale} />
           ))}
@@ -408,7 +408,7 @@ async function AppleExtraRail({
       {board.tracks.length === 0 ? (
         <EmptyRail title="Nothing to show here" body={board.note ?? ""} />
       ) : (
-        <div className="rail">
+        <div className="rail-list">
           {board.tracks.map((track) => (
             <TrackCard key={track.key} track={track} stale={board.stale} />
           ))}
@@ -450,9 +450,9 @@ async function InternationalMode({
       <ScopeToggle scope="international" qs={qs} />
 
       {/* by singer */}
-      <nav aria-label="Artist" className="px-[var(--board-gutter)] pt-4">
-        <p className="eyebrow mb-2 text-muted">By singer</p>
-        <ul className="flex flex-wrap gap-2">
+      <nav aria-label="Artist" className="pt-4">
+        <p className="eyebrow mb-2 px-[var(--board-gutter)] text-muted">By singer</p>
+        <ul className="chip-row">
           {artists.length === 0 ? (
             <li className="text-[12px] text-muted">
               Last.fm&rsquo;s worldwide artist chart is unavailable right now.
@@ -477,9 +477,9 @@ async function InternationalMode({
       </nav>
 
       {/* by genre — tag charts take no country, so these are worldwide */}
-      <nav aria-label="Genre" className="px-[var(--board-gutter)] pt-4">
-        <p className="eyebrow mb-2 text-muted">By genre</p>
-        <ul className="flex flex-wrap gap-2">
+      <nav aria-label="Genre" className="pt-4">
+        <p className="eyebrow mb-2 px-[var(--board-gutter)] text-muted">By genre</p>
+        <ul className="chip-row">
           {GENRES.map((g) => (
             <li key={g.slug}>
               <Link
@@ -548,7 +548,7 @@ async function InternationalRail({
       {board.tracks.length === 0 ? (
         <EmptyRail title="Nothing to show here" body={board.note ?? ""} />
       ) : (
-        <div className="rail">
+        <div className="rail-list">
           {board.tracks.map((track) => (
             <TrackCard key={track.key} track={track} stale={board.stale} />
           ))}
@@ -564,8 +564,8 @@ async function InternationalRail({
 
 function ShowChips({ active, qs }: { readonly active?: string; readonly qs: string }) {
   return (
-    <nav aria-label="Podcast show" className="px-[var(--board-gutter)] pt-4">
-      <ul className="flex flex-wrap gap-2">
+    <nav aria-label="Podcast show" className="pt-4">
+      <ul className="chip-row">
         <li>
           <Link
             href={`/?mode=podcast${qs}`}
@@ -644,7 +644,7 @@ async function PodcastRail({ showId }: { readonly showId?: string }) {
           }
         />
       ) : (
-        <div className="rail">
+        <div className="rail-list">
           {episodes.map((episode) => (
             <EpisodeCard key={episode.key} episode={episode} />
           ))}

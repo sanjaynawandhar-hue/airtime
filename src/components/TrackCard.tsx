@@ -63,7 +63,7 @@ export function TrackCard({
   const primaryLink = track.links[0];
 
   return (
-    <article className="group relative flex w-[290px] items-center gap-3 border border-surface-hi/60 bg-surface/50 py-2.5 pl-9 pr-2.5 transition-colors hover:border-gold/50">
+    <article className="group relative flex w-full items-center gap-3 border border-surface-hi/60 bg-surface/50 py-2.5 pl-9 pr-2.5 transition-colors hover:border-gold/50 sm:w-[290px]">
       {/* Rank, bled off the left edge. Decorative duplication — the accessible
           name below carries the position. */}
       <span

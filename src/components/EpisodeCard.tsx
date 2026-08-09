@@ -37,7 +37,7 @@ export function EpisodeCard({ episode }: { readonly episode: PodcastEpisode }) {
   const duration = isOk(episode.duration) ? formatDuration(episode.duration.value) : null;
 
   return (
-    <article className="group w-[280px] sm:w-[320px]">
+    <article className="group w-full sm:w-[320px]">
       <a
         href={episode.url}
         target="_blank"

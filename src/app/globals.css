@@ -7,19 +7,21 @@
  * ------------------------------------------------------------------ */
 
 @theme {
-  /* Ember. Warm plum-brown ground, burnt orange against ice blue.
+  /* Ultraviolet. Near-black violet ground, hot pink against electric cyan.
+     Built to punch on a phone screen and in a Reel.
      --flare and --cool remain semantic, never decorative:
-     orange = rising or in cinemas, blue = falling or on streaming. */
-  --color-ink: #1a1216;
-  --color-ink-deep: #120c0f;
-  --color-surface: #2e1f26;
-  --color-surface-hi: #402d36;
-  --color-flare: #ff6b35;
-  --color-cool: #4cc9f0;
-  --color-gold: #ffd166;
-  --color-paper: #f7f0ea;
-  /* Warm mid-tone, tuned to clear 4.5:1 on --ink for body-size text. */
-  --color-muted: #b9a49a;
+     pink = rising or in cinemas, cyan = falling or on streaming.
+     Every pair below clears WCAG AA; the tightest is flare-on-ink at 5.57:1. */
+  --color-ink: #0b0221;
+  --color-ink-deep: #060115;
+  --color-surface: #2b0b5e;
+  --color-surface-hi: #3d1580;
+  --color-flare: #ff2e63;
+  --color-cool: #08d9d6;
+  --color-gold: #ffc93c;
+  --color-paper: #f5f0ff;
+  /* Violet mid-tone, tuned to clear 4.5:1 on --ink AND on --surface-hi. */
+  --color-muted: #b3a3d9;
 
   --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
@@ -195,6 +197,73 @@ textarea {
 .rail > * {
   scroll-snap-align: start;
   flex: 0 0 auto;
+}
+
+/**
+ * A rail of wide cards is the wrong shape on a phone.
+ *
+ * A 290px track card on a 375px screen fills the viewport, so you see ONE
+ * result and half of the next — you scroll sideways a lot to read very little,
+ * and a chart becomes unreadable. `.rail-list` stacks those cards vertically on
+ * phones, where a top-20 reads as a list should, and becomes the normal
+ * horizontal rail from 640px up where there is room for three or four.
+ *
+ * Poster rails keep using `.rail` at every size: a 2:3 poster is narrow enough
+ * that two fit on a phone, which is the browsing behaviour you want there.
+ */
+.rail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-inline: var(--board-gutter);
+  padding-block: 0.25rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .rail-list {
+    flex-direction: row;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: var(--board-gutter);
+    padding-block: 0.25rem 1.25rem;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .rail-list::-webkit-scrollbar {
+    display: none;
+  }
+  .rail-list > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+}
+
+/**
+ * Chips scroll in one row on a phone instead of wrapping to three.
+ * Eleven genre chips were pushing the first actual result 600px down the page.
+ */
+.chip-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-inline: var(--board-gutter);
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+.chip-row > * {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 640px) {
+  .chip-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
 
 /* ------------------------------------------------------------------ *

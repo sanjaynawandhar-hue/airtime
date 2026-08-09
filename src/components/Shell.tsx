@@ -195,10 +195,10 @@ export function SectionHead({
   readonly action?: { readonly label: string; readonly href: string };
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3 px-[var(--board-gutter)] pb-3 pt-8">
+    <div className="flex flex-wrap items-end justify-between gap-3 px-[var(--board-gutter)] pb-2.5 pt-6 sm:pb-3 sm:pt-8">
       <div className="min-w-0">
         <p className="eyebrow mb-1.5 text-gold">{eyebrow}</p>
-        <h2 id={titleId} className="display text-2xl text-paper sm:text-3xl">
+        <h2 id={titleId} className="display text-xl leading-[0.95] text-paper sm:text-2xl md:text-3xl">
           {title}
         </h2>
         {meta ? <div className="mt-1.5">{meta}</div> : null}
