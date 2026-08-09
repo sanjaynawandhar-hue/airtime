@@ -350,7 +350,7 @@ function TheatricalBlock({ details }: { readonly details: FilmDetails }) {
    */
   if (!theatrical.currentlyRunning) {
     return (
-      <div className="border-l-4 border-surface-hi bg-surface/40 p-4">
+      <div className="border-l-4 border-surface-hi bg-surface p-4">
         <p className="eyebrow mb-2 text-muted">Cinema release</p>
         <p className="text-sm text-paper">
           Released in cinemas in {theatrical.country}
@@ -374,7 +374,7 @@ function TheatricalBlock({ details }: { readonly details: FilmDetails }) {
   }
 
   return (
-    <div className="border-l-4 border-flare bg-surface/40 p-4">
+    <div className="border-l-4 border-flare bg-surface p-4">
       <p className="eyebrow mb-2 text-flare">In cinemas</p>
       <p className="text-sm text-paper">
         Playing in {theatrical.country}
@@ -399,7 +399,7 @@ function TheatricalBlock({ details }: { readonly details: FilmDetails }) {
             href={theatrical.booking.value.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-block border border-flare bg-flare px-4 py-2 text-[13px] font-semibold text-ink-deep transition-opacity hover:opacity-85"
+            className="mt-3 inline-block border border-flare bg-flare px-4 py-2 text-[13px] font-semibold text-ink transition-opacity hover:opacity-85"
           >
             Find tickets on {theatrical.booking.value.platformName}
           </a>
@@ -424,7 +424,7 @@ function OttBlock({
   const ordered = orderLinks(ott.offers, services);
 
   return (
-    <div className="border-l-4 border-cool bg-surface/40 p-4">
+    <div className="border-l-4 border-cool bg-surface p-4">
       <p className="eyebrow mb-2 text-cool">On streaming</p>
       {ordered.length === 0 ? (
         <p className="text-sm text-muted">
@@ -472,7 +472,7 @@ function OfferButton({
       className={`flex flex-col border px-3 py-2 transition-colors ${
         extra
           ? "border-surface-hi text-muted hover:border-paper hover:text-paper"
-          : "border-cool bg-cool text-ink-deep hover:opacity-85"
+          : "border-cool bg-cool text-ink hover:opacity-85"
       }`}
     >
       <span className="text-[13px] font-semibold">{offer.platformName}</span>
@@ -486,7 +486,7 @@ function OfferButton({
 
 function Anticipation({ count }: { readonly count: Maybe<number> }) {
   return (
-    <div className="flex flex-col gap-1 border-l-4 border-gold bg-surface/40 p-4">
+    <div className="flex flex-col gap-1 border-l-4 border-gold bg-surface p-4">
       <p className="eyebrow text-gold">Airtime anticipation</p>
       {isOk(count) ? (
         <p className="text-paper">
@@ -702,7 +702,7 @@ function CriticShelf({ details }: { readonly details: FilmDetails }) {
           {details.criticReviews.slice(0, 8).map((review) => (
             <li
               key={review.id}
-              className="flex items-center justify-between gap-3 border border-surface-hi bg-surface/30 p-3"
+              className="flex items-center justify-between gap-3 border border-surface-hi bg-surface p-3"
             >
               <div className="min-w-0">
                 <p className="truncate text-[13px] font-semibold text-paper">

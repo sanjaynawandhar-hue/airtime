@@ -216,7 +216,7 @@ export function PreferencesForm({
           type="button"
           onClick={save}
           disabled={busy || !granted}
-          className="border border-gold bg-gold px-5 py-2.5 text-[13px] font-semibold text-ink-deep transition-opacity hover:opacity-85 disabled:opacity-40"
+          className="border border-gold bg-gold px-5 py-2.5 text-[13px] font-semibold text-ink transition-opacity hover:opacity-85 disabled:opacity-40"
         >
           Save preferences
         </button>
@@ -252,7 +252,7 @@ export function PreferencesForm({
           type="button"
           onClick={reset}
           disabled={busy}
-          className="border border-flare px-4 py-2.5 text-[13px] font-semibold text-flare transition-colors hover:bg-flare hover:text-ink-deep disabled:opacity-50"
+          className="border border-flare px-4 py-2.5 text-[13px] font-semibold text-flare transition-colors hover:bg-flare hover:text-ink disabled:opacity-50"
         >
           Delete everything stored about me
         </button>
@@ -285,8 +285,8 @@ function ChipGroup({
               className={`border px-3 py-1.5 text-[13px] transition-colors ${
                 on
                   ? tone === "cool"
-                    ? "border-cool bg-cool text-ink-deep"
-                    : "border-gold bg-gold text-ink-deep"
+                    ? "border-cool bg-cool text-ink"
+                    : "border-gold bg-gold text-ink"
                   : "border-surface-hi text-muted hover:text-paper"
               }`}
             >

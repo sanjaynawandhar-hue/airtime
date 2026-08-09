@@ -18,13 +18,13 @@ export function EmptyRail({
   readonly action?: { readonly label: string; readonly href: string };
 }) {
   return (
-    <div className="mx-[var(--board-gutter)] border border-surface-hi bg-surface/40 px-5 py-8">
+    <div className="mx-[var(--board-gutter)] border border-surface-hi bg-surface px-5 py-8">
       <p className="display-tight mb-2 text-lg text-paper">{title}</p>
       <p className="max-w-prose text-sm leading-relaxed text-muted">{body}</p>
       {action ? (
         <Link
           href={action.href}
-          className="mt-4 inline-block border border-gold px-4 py-2 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink-deep"
+          className="mt-4 inline-block border border-gold px-4 py-2 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink"
         >
           {action.label}
         </Link>
@@ -45,7 +45,7 @@ export function SourceDown({
   readonly what: string;
 }) {
   return (
-    <div className="mx-[var(--board-gutter)] border border-flare/40 bg-surface/40 px-5 py-6">
+    <div className="mx-[var(--board-gutter)] border border-flare/40 bg-surface px-5 py-6">
       <p className="eyebrow mb-2 text-flare">{sourceName} didn&rsquo;t answer</p>
       <p className="max-w-prose text-sm leading-relaxed text-muted">
         We couldn&rsquo;t reach {sourceName} just now, so {what} isn&rsquo;t showing.
@@ -65,7 +65,7 @@ export function NotConnected({
   readonly what: string;
 }) {
   return (
-    <div className="mx-[var(--board-gutter)] border border-surface-hi bg-surface/40 px-5 py-6">
+    <div className="mx-[var(--board-gutter)] border border-surface-hi bg-surface px-5 py-6">
       <p className="eyebrow mb-2 text-muted">{sourceName} not connected</p>
       <p className="max-w-prose text-sm leading-relaxed text-muted">
         {what} needs a {sourceName} API key. Add one to the environment and this
@@ -96,7 +96,7 @@ export function SourceBanner({
   if (missing.length === 0) return null;
 
   return (
-    <div className="mx-[var(--board-gutter)] mt-4 border-l-2 border-gold bg-surface/40 px-4 py-3">
+    <div className="mx-[var(--board-gutter)] mt-4 border-l-2 border-gold bg-surface px-4 py-3">
       <p className="text-[13px] leading-relaxed text-paper">
         <span className="eyebrow mr-2 text-gold">
           {connected} of {total} sources connected
@@ -120,7 +120,7 @@ export function SkeletonRail({ count = 6 }: { readonly count?: number }) {
       {Array.from({ length: count }, (_, i) => (
         <div
           key={i}
-          className="h-[248px] w-[164px] shrink-0 animate-pulse bg-surface/50"
+          className="h-[248px] w-[164px] shrink-0 animate-pulse bg-surface"
         />
       ))}
     </div>
@@ -131,7 +131,7 @@ export function SkeletonRows({ count = 5 }: { readonly count?: number }) {
   return (
     <div className="flex flex-col gap-2 px-[var(--board-gutter)]" aria-hidden="true">
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="h-[72px] animate-pulse bg-surface/50" />
+        <div key={i} className="h-[72px] animate-pulse bg-surface" />
       ))}
     </div>
   );

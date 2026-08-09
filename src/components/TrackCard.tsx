@@ -63,12 +63,12 @@ export function TrackCard({
   const primaryLink = track.links[0];
 
   return (
-    <article className="group relative flex w-full items-center gap-3 border border-surface-hi/60 bg-surface/50 py-2.5 pl-9 pr-2.5 transition-colors hover:border-gold/50 sm:w-[290px]">
+    <article className="group relative flex w-full items-center gap-3 border border-surface-hi/60 bg-surface py-2.5 pl-9 pr-2.5 transition-colors hover:border-gold/50 sm:w-[290px]">
       {/* Rank, bled off the left edge. Decorative duplication — the accessible
           name below carries the position. */}
       <span
         aria-hidden="true"
-        className="rank-numeral pointer-events-none absolute -left-1.5 top-1/2 -translate-y-1/2 select-none text-[44px] text-paper/12"
+        className="rank-numeral pointer-events-none absolute -left-1.5 top-1/2 -translate-y-1/2 select-none text-[44px] text-paper/15"
       >
         {track.rank}
       </span>
@@ -79,12 +79,12 @@ export function TrackCard({
           alt=""
           width={52}
           height={52}
-          className="h-[52px] w-[52px] shrink-0 bg-ink-deep object-cover"
+          className="h-[52px] w-[52px] shrink-0 bg-surface-hi object-cover"
           sizes="52px"
         />
       ) : (
         <span
-          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center bg-ink-deep text-[9px] leading-tight text-muted"
+          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center bg-surface-hi text-[9px] leading-tight text-muted"
           aria-hidden="true"
         >
           No art

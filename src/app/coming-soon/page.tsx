@@ -67,7 +67,7 @@ export default async function ComingSoonPage({
               return (
                 <li
                   key={film.key}
-                  className="border-t border-surface-hi/60 px-[var(--board-gutter)] py-4 transition-colors hover:bg-surface/30"
+                  className="border-t border-surface-hi/60 px-[var(--board-gutter)] py-4 transition-colors hover:bg-surface"
                 >
                   <Link href={`/film/${film.tmdbId}`} className="flex items-center gap-4">
                     <div className="relative aspect-[2/3] w-[64px] shrink-0 overflow-hidden bg-surface">

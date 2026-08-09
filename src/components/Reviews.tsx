@@ -139,7 +139,7 @@ export function Reviews({
 
       {/* write */}
       {consentGranted ? (
-        <form onSubmit={submit} className="mb-8 border border-surface-hi bg-surface/40 p-4">
+        <form onSubmit={submit} className="mb-8 border border-surface-hi bg-surface p-4">
           <fieldset className="mb-3">
             <legend className="eyebrow mb-2 text-muted">Your rating (optional)</legend>
             <div className="flex flex-wrap gap-1">
@@ -151,7 +151,7 @@ export function Reviews({
                   aria-pressed={score === n}
                   className={`h-9 w-9 border text-[13px] transition-colors ${
                     score === n
-                      ? "border-cool bg-cool text-ink-deep"
+                      ? "border-cool bg-cool text-ink"
                       : "border-surface-hi text-muted hover:border-cool hover:text-cool"
                   }`}
                 >
@@ -191,7 +191,7 @@ export function Reviews({
               <button
                 type="submit"
                 disabled={busy}
-                className="border border-cool bg-cool px-4 py-2 text-[13px] font-semibold text-ink-deep transition-opacity hover:opacity-85 disabled:opacity-50"
+                className="border border-cool bg-cool px-4 py-2 text-[13px] font-semibold text-ink transition-opacity hover:opacity-85 disabled:opacity-50"
               >
                 {mine ? "Update" : "Post"}
               </button>
@@ -209,7 +209,7 @@ export function Reviews({
           ) : null}
         </form>
       ) : (
-        <div className="mb-8 border border-surface-hi bg-surface/40 p-4">
+        <div className="mb-8 border border-surface-hi bg-surface p-4">
           <p className="max-w-prose text-sm leading-relaxed text-muted">
             Posting a review means storing it against a random ID in your browser.
             You haven&rsquo;t opted into storage, so the form is off — reading
@@ -233,7 +233,7 @@ export function Reviews({
             <li
               key={review.id}
               className={`border p-4 ${
-                review.mine ? "border-cool/50 bg-surface/30" : "border-surface-hi bg-surface/20"
+                review.mine ? "border-cool/50 bg-surface" : "border-surface-hi bg-surface"
               }`}
             >
               <div className="mb-2 flex items-center gap-3">

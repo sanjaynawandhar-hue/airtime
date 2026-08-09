@@ -60,7 +60,7 @@ export function EpisodeCard({ episode }: { readonly episode: PodcastEpisode }) {
           )}
 
           {duration ? (
-            <span className="absolute bottom-1.5 right-1.5 bg-ink-deep/90 px-1.5 py-0.5 text-[11px] tabular-nums text-paper">
+            <span className="absolute bottom-1.5 right-1.5 bg-ink-deep/85 px-1.5 py-0.5 text-[11px] tabular-nums text-ink">
               {duration}
             </span>
           ) : null}

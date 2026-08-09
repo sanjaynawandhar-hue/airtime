@@ -39,7 +39,7 @@ export function ConsentBar({ consent }: { readonly consent: ConsentState }) {
     <div
       role="dialog"
       aria-label="Storage preferences"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-gold bg-ink-deep px-[var(--board-gutter)] py-4"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-gold bg-surface px-[var(--board-gutter)] py-4"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-2xl text-[13px] leading-relaxed text-paper">
@@ -62,7 +62,7 @@ export function ConsentBar({ consent }: { readonly consent: ConsentState }) {
             type="button"
             disabled={busy}
             onClick={() => choose("granted")}
-            className="border border-gold bg-gold px-4 py-2 text-[13px] font-semibold text-ink-deep transition-opacity hover:opacity-85 disabled:opacity-50"
+            className="border border-gold bg-gold px-4 py-2 text-[13px] font-semibold text-ink transition-opacity hover:opacity-85 disabled:opacity-50"
           >
             Remember me
           </button>

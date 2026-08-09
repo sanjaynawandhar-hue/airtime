@@ -134,7 +134,7 @@ export function FilmCard({
           {showRank && isOk(rank) ? (
             <span
               aria-hidden="true"
-              className="rank-numeral pointer-events-none absolute -bottom-2 -left-1 select-none text-[62px] text-paper mix-blend-overlay"
+              className="rank-numeral pointer-events-none absolute -bottom-2 -left-1 select-none text-[62px] text-ink-deep/35"
             >
               {rank.value}
             </span>

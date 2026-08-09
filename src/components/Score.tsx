@@ -106,7 +106,7 @@ export function DivergenceBadge({
   }
 
   return (
-    <div className="flex flex-col gap-2 border border-surface-hi bg-surface/60 p-3">
+    <div className="flex flex-col gap-2 border border-surface-hi bg-surface p-3">
       <p className="eyebrow text-gold">Split verdict</p>
       <p className="text-sm text-paper">{divergenceCopy(d)}</p>
       <div className="flex flex-col gap-1.5">
@@ -129,7 +129,7 @@ function Bar({
   return (
     <div className="flex items-center gap-2">
       <span className="w-[104px] shrink-0 truncate text-[11px] text-muted">{label}</span>
-      <span className="h-2 flex-1 bg-ink-deep">
+      <span className="h-2 flex-1 bg-surface-hi">
         <span
           className={`block h-full ${tone === "flare" ? "bg-flare" : "bg-cool"}`}
           style={{ width: `${Math.max(2, Math.min(100, percent))}%` }}

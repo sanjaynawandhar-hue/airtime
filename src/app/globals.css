@@ -7,21 +7,34 @@
  * ------------------------------------------------------------------ */
 
 @theme {
-  /* Ultraviolet. Near-black violet ground, hot pink against electric cyan.
-     Built to punch on a phone screen and in a Reel.
-     --flare and --cool remain semantic, never decorative:
-     pink = rising or in cinemas, cyan = falling or on streaming.
-     Every pair below clears WCAG AA; the tightest is flare-on-ink at 5.57:1. */
-  --color-ink: #0b0221;
-  --color-ink-deep: #060115;
-  --color-surface: #2b0b5e;
-  --color-surface-hi: #3d1580;
-  --color-flare: #ff2e63;
-  --color-cool: #08d9d6;
-  --color-gold: #ffc93c;
-  --color-paper: #f5f0ff;
-  /* Violet mid-tone, tuned to clear 4.5:1 on --ink AND on --surface-hi. */
-  --color-muted: #b3a3d9;
+  /* DAYLIGHT — a light theme.
+   *
+   * The token names describe ROLE, not literal lightness, and the roles did not
+   * change when the theme flipped:
+   *   --ink        the page ground              (now light)
+   *   --ink-deep   the deepest value: type on bright fills, scrims, badges
+   *   --surface    a raised card                (now white)
+   *   --surface-hi borders and recessed wells
+   *   --paper      primary type                 (now dark)
+   *   --muted      secondary type
+   *
+   * --flare and --cool stay semantic, never decorative:
+   * pink = rising or in cinemas, teal = falling or on streaming.
+   *
+   * The accents are deliberately deeper than their dark-theme versions —
+   * measured, not guessed. #FF2E63 on a light ground is only 4.12:1, which
+   * fails AA for body text. These values clear 4.5:1 on the ground, on a white
+   * card, AND with white type on top of them, so a chip works either way round.
+   */
+  --color-ink: #f4f1fe;
+  --color-ink-deep: #14082b;
+  --color-surface: #ffffff;
+  --color-surface-hi: #ded5f5;
+  --color-flare: #cc0d53;
+  --color-cool: #077a77;
+  --color-gold: #945900;
+  --color-paper: #1e1033;
+  --color-muted: #655683;
 
   --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
@@ -36,7 +49,7 @@
  * ------------------------------------------------------------------ */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   --board-gutter: 1rem;
 }
 
@@ -47,7 +60,7 @@
 }
 
 html {
-  background: var(--color-ink-deep);
+  background: var(--color-ink);
 }
 
 body {

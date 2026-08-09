@@ -31,6 +31,12 @@ import { fetchPodcastEpisodes, podcastsConfigured } from "@/lib/providers/podcas
 import { PODCAST_SHOWS } from "@/lib/core/config";
 import { SUPPORTED_COUNTRIES } from "@/lib/prefs/types";
 import { resolveCountry } from "@/lib/prefs/country";
+import {
+  CHART_FULL,
+  CHART_PREVIEW,
+  SOURCE_SLUG,
+  chartHref,
+} from "@/lib/boards/chart";
 
 const countryName = (code: string) =>
   SUPPORTED_COUNTRIES.find((c) => c.code === code)?.name ?? code;
@@ -159,7 +165,7 @@ function ScopeToggle({
             aria-current={scope === option.value ? "page" : undefined}
             className={`display border px-4 py-2 text-[13px] transition-colors ${
               scope === option.value
-                ? "border-cool bg-cool text-ink-deep"
+                ? "border-cool bg-cool text-ink"
                 : "border-surface-hi text-muted hover:text-paper"
             }`}
           >
@@ -187,7 +193,7 @@ function GenreChips({
             aria-current={!active ? "page" : undefined}
             className={`inline-block border px-3 py-1.5 text-[12px] transition-colors ${
               !active
-                ? "border-gold bg-gold text-ink-deep"
+                ? "border-gold bg-gold text-ink"
                 : "border-surface-hi text-muted hover:text-paper"
             }`}
           >
@@ -201,7 +207,7 @@ function GenreChips({
               aria-current={active === g.slug ? "page" : undefined}
               className={`inline-block border px-3 py-1.5 text-[12px] transition-colors ${
                 active === g.slug
-                  ? "border-gold bg-gold text-ink-deep"
+                  ? "border-gold bg-gold text-ink"
                   : "border-surface-hi text-muted hover:text-paper"
               }`}
             >
@@ -342,12 +348,16 @@ async function MusicRail({
   readonly country: string;
   readonly genre?: string;
 }) {
-  const board = await musicBoard({
-    source,
-    country,
-    genre,
-    limit: 20,
-  });
+  /**
+   * Fetch the whole chart, show the top few.
+   *
+   * Deliberately not requesting five: the rank-movement snapshot is written
+   * from whatever we fetched, so a five-row request would quietly shrink our
+   * movement history to five rows. It also means the "see all" page reads from
+   * the same warm cache rather than issuing a second, different request.
+   */
+  const board = await musicBoard({ source, country, genre, limit: CHART_FULL });
+  const slug = SOURCE_SLUG[source];
 
   return (
     <section aria-labelledby={`music-${source}`}>
@@ -355,6 +365,14 @@ async function MusicRail({
         eyebrow={genre ? `${genre} · ${countryName(country)}` : countryName(country)}
         title={board.title}
         titleId={`music-${source}`}
+        action={
+          slug && board.tracks.length > CHART_PREVIEW
+            ? {
+                label: `See all ${board.tracks.length}`,
+                href: chartHref(slug, { country, genre }),
+              }
+            : undefined
+        }
         meta={
           board.tracks.length > 0 ? (
             <div className="flex flex-wrap items-center gap-x-2">
@@ -375,7 +393,7 @@ async function MusicRail({
         />
       ) : (
         <div className="rail-list">
-          {board.tracks.map((track) => (
+          {board.tracks.slice(0, CHART_PREVIEW).map((track) => (
             <TrackCard key={track.key} track={track} stale={board.stale} />
           ))}
         </div>
@@ -391,7 +409,7 @@ async function AppleExtraRail({
   readonly kind: "albums" | "music-videos";
   readonly country: string;
 }) {
-  const board = await appleFeedBoard({ kind, country, limit: 20 });
+  const board = await appleFeedBoard({ kind, country, limit: CHART_FULL });
 
   return (
     <section aria-labelledby={`apple-${kind}`}>
@@ -399,6 +417,16 @@ async function AppleExtraRail({
         eyebrow={countryName(country)}
         title={board.title}
         titleId={`apple-${kind}`}
+        action={
+          board.tracks.length > CHART_PREVIEW
+            ? {
+                label: `See all ${board.tracks.length}`,
+                href: chartHref(kind === "albums" ? "apple-albums" : "apple-videos", {
+                  country,
+                }),
+              }
+            : undefined
+        }
         meta={
           board.tracks.length > 0 ? (
             <LastChecked fetchedAt={board.fetchedAt} stale={board.stale} />
@@ -409,7 +437,7 @@ async function AppleExtraRail({
         <EmptyRail title="Nothing to show here" body={board.note ?? ""} />
       ) : (
         <div className="rail-list">
-          {board.tracks.map((track) => (
+          {board.tracks.slice(0, CHART_PREVIEW).map((track) => (
             <TrackCard key={track.key} track={track} stale={board.stale} />
           ))}
         </div>
@@ -465,7 +493,7 @@ async function InternationalMode({
                 aria-current={artist === a.name ? "page" : undefined}
                 className={`inline-block border px-3 py-1.5 text-[12px] transition-colors ${
                   artist === a.name
-                    ? "border-gold bg-gold text-ink-deep"
+                    ? "border-gold bg-gold text-ink"
                     : "border-surface-hi text-muted hover:text-paper"
                 }`}
               >
@@ -487,7 +515,7 @@ async function InternationalMode({
                 aria-current={genre === g.slug ? "page" : undefined}
                 className={`inline-block border px-3 py-1.5 text-[12px] transition-colors ${
                   genre === g.slug
-                    ? "border-gold bg-gold text-ink-deep"
+                    ? "border-gold bg-gold text-ink"
                     : "border-surface-hi text-muted hover:text-paper"
                 }`}
               >
@@ -526,10 +554,10 @@ async function InternationalRail({
   readonly artist?: string;
 }) {
   const board = artist
-    ? await artistBoard(artist, country, 20)
+    ? await artistBoard(artist, country, CHART_FULL)
     : genre
-      ? await worldGenreBoard(genre, country, 20)
-      : await worldwideBoard(country, 20);
+      ? await worldGenreBoard(genre, country, CHART_FULL)
+      : await worldwideBoard(country, CHART_FULL);
 
   const eyebrow = artist ? "By singer" : genre ? `${genre} · worldwide` : "Worldwide";
 
@@ -539,6 +567,17 @@ async function InternationalRail({
         eyebrow={eyebrow}
         title={board.title}
         titleId="intl-rail"
+        action={
+          board.tracks.length > CHART_PREVIEW
+            ? {
+                label: `See all ${board.tracks.length}`,
+                href: chartHref(
+                  artist ? "artist" : genre ? "world-genre" : "worldwide",
+                  { country, genre, artist },
+                ),
+              }
+            : undefined
+        }
         meta={
           board.tracks.length > 0 ? (
             <LastChecked fetchedAt={board.fetchedAt} stale={board.stale} />
@@ -549,7 +588,7 @@ async function InternationalRail({
         <EmptyRail title="Nothing to show here" body={board.note ?? ""} />
       ) : (
         <div className="rail-list">
-          {board.tracks.map((track) => (
+          {board.tracks.slice(0, CHART_PREVIEW).map((track) => (
             <TrackCard key={track.key} track={track} stale={board.stale} />
           ))}
         </div>
@@ -572,7 +611,7 @@ function ShowChips({ active, qs }: { readonly active?: string; readonly qs: stri
             aria-current={!active ? "page" : undefined}
             className={`inline-block border px-3 py-1.5 text-[12px] transition-colors ${
               !active
-                ? "border-gold bg-gold text-ink-deep"
+                ? "border-gold bg-gold text-ink"
                 : "border-surface-hi text-muted hover:text-paper"
             }`}
           >
@@ -586,7 +625,7 @@ function ShowChips({ active, qs }: { readonly active?: string; readonly qs: stri
               aria-current={active === show.id ? "page" : undefined}
               className={`inline-block border px-3 py-1.5 text-[12px] transition-colors ${
                 active === show.id
-                  ? "border-gold bg-gold text-ink-deep"
+                  ? "border-gold bg-gold text-ink"
                   : "border-surface-hi text-muted hover:text-paper"
               }`}
             >

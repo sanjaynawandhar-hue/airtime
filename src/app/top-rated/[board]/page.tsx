@@ -64,7 +64,7 @@ export default async function TopRatedPage({
                   aria-current={id === board ? "page" : undefined}
                   className={`display inline-block border px-4 py-2 text-[13px] transition-colors ${
                     id === board
-                      ? "border-gold bg-gold text-ink-deep"
+                      ? "border-gold bg-gold text-ink"
                       : "border-surface-hi text-muted hover:text-paper"
                   }`}
                 >

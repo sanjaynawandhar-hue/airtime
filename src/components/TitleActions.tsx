@@ -56,7 +56,7 @@ export function WatchlistButton({
         aria-pressed={on}
         className={`flex items-center gap-2 border px-4 py-2.5 text-[13px] font-semibold transition-colors disabled:opacity-50 ${
           on
-            ? "border-gold bg-gold text-ink-deep"
+            ? "border-gold bg-gold text-ink"
             : "border-surface-hi text-paper hover:border-gold hover:text-gold"
         }`}
       >

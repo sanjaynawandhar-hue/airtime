@@ -17,7 +17,7 @@ export default function NotFound() {
       <div className="flex flex-wrap gap-2">
         <Link
           href="/"
-          className="border border-gold bg-gold px-4 py-2.5 text-[13px] font-semibold text-ink-deep transition-opacity hover:opacity-85"
+          className="border border-gold bg-gold px-4 py-2.5 text-[13px] font-semibold text-ink transition-opacity hover:opacity-85"
         >
           Back to the board
         </Link>

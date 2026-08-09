@@ -20,13 +20,13 @@ import { computeDivergence, divergenceCopy } from "@/lib/rank/divergence";
 
 export const runtime = "nodejs";
 
-const INK = "#060115";
-const SURFACE = "#2b0b5e";
-const FLARE = "#ff2e63";
-const COOL = "#08d9d6";
-const GOLD = "#ffc93c";
-const PAPER = "#f5f0ff";
-const MUTED = "#b3a3d9";
+const INK = "#f4f1fe";
+const SURFACE = "#ded5f5";
+const FLARE = "#cc0d53";
+const COOL = "#077a77";
+const GOLD = "#945900";
+const PAPER = "#1e1033";
+const MUTED = "#655683";
 
 function TickStrip({ colour, count = 46 }: { colour: string; count?: number }) {
   return (
@@ -217,7 +217,7 @@ export async function GET(request: Request) {
               marginTop: 24,
               alignSelf: "flex-start",
               backgroundColor: inCinemas ? FLARE : COOL,
-              color: INK,
+              color: "#ffffff",
               fontFamily: "Archivo",
               fontSize: 28,
               letterSpacing: 2,

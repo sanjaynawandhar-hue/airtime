@@ -90,7 +90,7 @@ export function AudioPreview({ previewUrl, title, artist }: Props) {
           ? `Stop preview of ${title} by ${artist}`
           : `Play 30-second preview of ${title} by ${artist}`
       }
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-paper/25 bg-ink-deep/80 text-paper transition-colors hover:border-gold hover:text-gold"
+      className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-surface-hi bg-surface text-paper transition-colors hover:border-gold hover:text-gold"
     >
       {playing ? (
         <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor">

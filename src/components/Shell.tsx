@@ -108,7 +108,7 @@ export function ModeToggle({
             aria-current={mode === value ? "page" : undefined}
             className={`display px-5 py-2.5 text-sm transition-colors ${
               mode === value
-                ? "bg-paper text-ink-deep"
+                ? "bg-ink-deep text-ink"
                 : "text-muted hover:text-paper"
             }`}
           >
@@ -151,8 +151,8 @@ export function RailToggle({
               className={`display flex items-center gap-2 border px-4 py-2 text-[13px] transition-colors ${
                 selected
                   ? option.tone === "flare"
-                    ? "border-flare bg-flare text-ink-deep"
-                    : "border-cool bg-cool text-ink-deep"
+                    ? "border-flare bg-flare text-ink"
+                    : "border-cool bg-cool text-ink"
                   : "border-surface-hi text-muted hover:text-paper"
               }`}
             >
