@@ -1,0 +1,287 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ *
+ * Airtime tokens — see DESIGN.md
+ * Six values. --flare and --cool are semantic, never decorative:
+ * orange = rising or in cinemas, blue = falling or on streaming.
+ * ------------------------------------------------------------------ */
+
+@theme {
+  /* Ember. Warm plum-brown ground, burnt orange against ice blue.
+     --flare and --cool remain semantic, never decorative:
+     orange = rising or in cinemas, blue = falling or on streaming. */
+  --color-ink: #1a1216;
+  --color-ink-deep: #120c0f;
+  --color-surface: #2e1f26;
+  --color-surface-hi: #402d36;
+  --color-flare: #ff6b35;
+  --color-cool: #4cc9f0;
+  --color-gold: #ffd166;
+  --color-paper: #f7f0ea;
+  /* Warm mid-tone, tuned to clear 4.5:1 on --ink for body-size text. */
+  --color-muted: #b9a49a;
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 4px;
+
+  --ease-board: cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+/* ------------------------------------------------------------------ *
+ * Base
+ * ------------------------------------------------------------------ */
+
+:root {
+  color-scheme: dark;
+  --board-gutter: 1rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --board-gutter: 2rem;
+  }
+}
+
+html {
+  background: var(--color-ink-deep);
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Tabular figures everywhere. Chart positions that jitter as they update are
+   the fastest way to make live data look untrustworthy. */
+body,
+button,
+input,
+select,
+textarea {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ *
+ * Display type — Archivo pushed wide. Short labels only.
+ * ------------------------------------------------------------------ */
+
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 118;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  line-height: 0.92;
+}
+
+.display-tight {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 100;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 112;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+}
+
+.rank-numeral {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 118;
+  font-weight: 800;
+  line-height: 0.78;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ *
+ * Focus — visible, high contrast, never removed
+ * ------------------------------------------------------------------ */
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--color-gold);
+  color: var(--color-ink-deep);
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+}
+.skip-link:focus {
+  left: var(--board-gutter);
+  top: 0.5rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Brand texture — the tick strip.
+ * Reads as a broadcast leader and as film perforations at once.
+ * Pure gradient: no image request, no layout cost.
+ * ------------------------------------------------------------------ */
+
+.tick-strip {
+  height: 10px;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0px,
+    currentColor 2px,
+    transparent 2px,
+    transparent 9px
+  );
+  opacity: 0.5;
+}
+
+.tick-strip-lg {
+  height: 18px;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0px,
+    currentColor 3px,
+    transparent 3px,
+    transparent 14px
+  );
+  opacity: 0.45;
+}
+
+/* Hatch fill — used wherever data is stale. Same visual language as the
+   Movement Bar's stale state, so "hatched means we're not sure this is
+   current" is learned once and applies product-wide. */
+.hatched {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    currentColor 0px,
+    currentColor 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * Rails — horizontal scroll, snap, no visible scrollbar
+ * ------------------------------------------------------------------ */
+
+.rail {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-left: var(--board-gutter);
+  padding-inline: var(--board-gutter);
+  padding-block: 0.25rem 1.25rem;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.rail > * {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion. Everything below is opt-out under prefers-reduced-motion.
+ * Nothing here is decorative — each animation reports a data change.
+ * ------------------------------------------------------------------ */
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-flare {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-ticker {
+  animation: ticker 45s linear infinite;
+}
+.animate-rise {
+  animation: rise 0.4s var(--ease-board) both;
+}
+.animate-live {
+  animation: pulse-flare 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-ticker {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Utility
+ * ------------------------------------------------------------------ */
+
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
