@@ -13,7 +13,9 @@ import {
   appleFeedBoard,
   artistBoard,
   fetchTopArtists,
+  CURRENT_YEAR,
   musicBoard,
+  releasedThisYearBoard,
   sourceAvailability,
   worldGenreBoard,
   worldwideBoard,
@@ -27,8 +29,16 @@ import { tmdbProvider } from "@/lib/providers/tmdb";
 import { omdbProvider } from "@/lib/providers/omdb";
 import { SOURCE_LABEL } from "@/lib/core/types";
 import { EpisodeCard } from "@/components/EpisodeCard";
+import { SearchBox } from "@/components/SearchBox";
+import { TrailerCard } from "@/components/TrailerCard";
+import {
+  TRAILER_WINDOW_DAYS,
+  fetchTrailers,
+  missingTrailerSources,
+  type TrailerScope,
+} from "@/lib/providers/trailers";
 import { fetchPodcastEpisodes, podcastsConfigured } from "@/lib/providers/podcasts";
-import { PODCAST_SHOWS } from "@/lib/core/config";
+import { PODCAST_SHOWS, WATCH_PROVIDERS } from "@/lib/core/config";
 import { SUPPORTED_COUNTRIES } from "@/lib/prefs/types";
 import { resolveCountry } from "@/lib/prefs/country";
 import {
@@ -59,6 +69,7 @@ interface SearchParams {
   readonly show?: string;
   readonly scope?: string;
   readonly artist?: string;
+  readonly platform?: string;
 }
 
 export default async function Home({
@@ -71,7 +82,13 @@ export default async function Home({
   const country = resolveCountry(params.country, prefs.country);
 
   const mode =
-    params.mode === "film" ? "film" : params.mode === "podcast" ? "podcast" : "music";
+    params.mode === "film"
+      ? "film"
+      : params.mode === "podcast"
+        ? "podcast"
+        : params.mode === "trailer"
+          ? "trailer"
+          : "music";
   const rail = params.rail === "ott" ? "ott" : "theatrical";
   const genre = params.genre;
 
@@ -90,20 +107,33 @@ export default async function Home({
         <SourceBanner {...sourceStatus(mode)} />
 
         {mode === "music" ? (
-          params.scope === "international" ? (
-            <InternationalMode
-              country={country}
-              genre={genre}
-              artist={params.artist}
-              qs={qs}
-            />
-          ) : (
-            <MusicMode country={country} genre={genre} qs={qs} />
-          )
+          <>
+            <div className="px-[var(--board-gutter)] pt-5">
+              <SearchBox country={params.country ? country : undefined} />
+            </div>
+            {params.scope === "international" ? (
+              <InternationalMode
+                country={country}
+                genre={genre}
+                artist={params.artist}
+                qs={qs}
+              />
+            ) : (
+              <MusicMode country={country} genre={genre} qs={qs} />
+            )}
+          </>
         ) : mode === "podcast" ? (
           <PodcastMode showId={params.show} qs={qs} />
+        ) : mode === "trailer" ? (
+          <TrailerMode />
         ) : (
-          <FilmMode country={country} rail={rail} services={prefs.services} qs={qs} />
+          <FilmMode
+            country={country}
+            rail={rail}
+            platform={params.platform}
+            services={prefs.services}
+            qs={qs}
+          />
         )}
       </main>
       <Footer />
@@ -116,13 +146,17 @@ export default async function Home({
  * Which sources can answer right now. Read from the providers themselves so the
  * banner cannot drift out of step with what actually happens on the page.
  */
-function sourceStatus(mode: "music" | "film" | "podcast") {
+function sourceStatus(mode: "music" | "film" | "podcast" | "trailer") {
   const providers =
     mode === "music"
       ? [appleMusicProvider, deezerProvider, youtubeProvider, lastfmProvider]
       : mode === "podcast"
         ? [youtubeProvider]
-        : [tmdbProvider, omdbProvider];
+        : mode === "trailer"
+          ? // Trailers genuinely need both: TMDB for which video is the
+            // trailer, YouTube for the view count that orders the rail.
+            [tmdbProvider, youtubeProvider]
+          : [tmdbProvider, omdbProvider];
   const missing = providers.filter((p) => !p.isEnabled()).map((p) => p.displayName);
   return { connected: providers.length - missing.length, total: providers.length, missing };
 }
@@ -268,6 +302,19 @@ function MusicMode({
         </Suspense>
       ) : null}
 
+      {/* This year's releases. Skipped under a genre: the filter runs over a
+          deep chart fetch, and the genre-capable sources are a different set. */}
+      {genre ? null : (
+        <>
+          <Suspense fallback={<RailSkeleton label={`Fetching ${CURRENT_YEAR} releases on Apple Music`} />}>
+            <ThisYearRail source="apple-music" country={country} />
+          </Suspense>
+          <Suspense fallback={<RailSkeleton label={`Fetching ${CURRENT_YEAR} releases on YouTube`} />}>
+            <ThisYearRail source="youtube" country={country} />
+          </Suspense>
+        </>
+      )}
+
       {/* Apple's albums and music-video charts are the same published data as
           the songs feed and need no key, so they sit high on the page and carry
           it when the key-gated sources below are empty. Skipped under a genre —
@@ -335,6 +382,61 @@ function MusicRailSkeleton({ source }: { readonly source?: MusicSourceId }) {
         title={source ? `Fetching ${SOURCE_LABEL[source]}` : "Fetching the chart"}
       />
       <SkeletonRail />
+    </section>
+  );
+}
+
+/**
+ * Songs on the current chart that were released this year.
+ *
+ * The heading and the note both say exactly that. It is NOT "the most played
+ * songs of 2026" — no source publishes a year-to-date play ranking, so that
+ * list could only come from us inventing it.
+ */
+async function ThisYearRail({
+  source,
+  country,
+}: {
+  readonly source: "apple-music" | "youtube";
+  readonly country: string;
+}) {
+  const board = await releasedThisYearBoard({ source, country, limit: CHART_PREVIEW });
+
+  // A source with no current-year songs gets one quiet line, not a rail-sized
+  // empty panel — this is a supplementary cut of a chart shown elsewhere.
+  if (board.tracks.length === 0) {
+    return (
+      <p className="px-[var(--board-gutter)] pt-4 text-[11px] text-muted">
+        {board.note}
+      </p>
+    );
+  }
+
+  return (
+    <section aria-labelledby={`year-${source}`}>
+      <SectionHead
+        eyebrow={`${CURRENT_YEAR} releases · ${countryName(country)}`}
+        title={board.title}
+        titleId={`year-${source}`}
+        meta={
+          <>
+            <LastChecked fetchedAt={board.fetchedAt} stale={board.stale} />
+            <p className="mt-1 max-w-prose text-[11px] text-muted">
+              Songs on{" "}
+              {source === "apple-music" ? "Apple Music's" : "YouTube's"} chart
+              right now whose release date falls in {CURRENT_YEAR}, in chart
+              order. Neither service publishes a year-to-date play ranking, so
+              this is a cut of the live chart rather than a &ldquo;best of
+              {" "}{CURRENT_YEAR}&rdquo; we made up.
+            </p>
+          </>
+        }
+      />
+      <div className="rail-list">
+        {board.tracks.map((track) => (
+          <TrackCard key={track.key} track={track} stale={board.stale} />
+        ))}
+      </div>
     </section>
   );
 }
@@ -704,35 +806,186 @@ async function PodcastRail({ showId }: { readonly showId?: string }) {
  * Film
  * ------------------------------------------------------------------ */
 
+/**
+ * Which service to narrow the streaming rail to.
+ *
+ * Only services that actually operate in the reader's country are offered —
+ * WATCH_PROVIDERS carries a `regions` list per platform, so a reader in the UK
+ * is never shown a JioHotstar chip that could only ever come back empty.
+ */
+function PlatformChips({
+  country,
+  active,
+  qs,
+}: {
+  readonly country: string;
+  readonly active?: string;
+  readonly qs: string;
+}) {
+  const available = WATCH_PROVIDERS.filter((p) => p.regions.includes(country));
+  if (available.length === 0) return null;
+
+  const base = `/?mode=film&rail=ott${qs}`;
+  const chip = (selected: boolean) =>
+    `inline-block border px-3 py-1.5 text-[12px] transition-colors ${
+      selected
+        ? "border-cool bg-cool text-ink"
+        : "border-surface-hi text-muted hover:text-paper"
+    }`;
+
+  return (
+    <nav aria-label="Streaming service" className="pt-4">
+      <ul className="chip-row">
+        <li>
+          <Link href={base} aria-current={!active ? "page" : undefined} className={chip(!active)}>
+            All services
+          </Link>
+        </li>
+        {available.map((p) => (
+          <li key={p.platform}>
+            <Link
+              href={`${base}&platform=${p.platform}`}
+              aria-current={active === p.platform ? "page" : undefined}
+              className={chip(active === p.platform)}
+            >
+              {p.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 function FilmMode({
   country,
   rail,
+  platform,
   services,
   qs,
 }: {
   readonly country: string;
   readonly rail: "theatrical" | "ott";
+  readonly platform?: string;
   readonly services: readonly string[];
   readonly qs: string;
 }) {
+  // A platform filter only means anything on the streaming rail. Carrying it
+  // into the theatrical rail would be nonsense, so it is dropped there.
+  const activePlatform = rail === "ott" ? platform : undefined;
+
   return (
     <>
       <div className="pt-4">
         <RailToggle rail={rail} qs={qs} />
       </div>
 
-      <Suspense fallback={<RailSkeleton label={rail === "theatrical" ? "Fetching cinema listings" : "Fetching streaming titles"} />}>
-        <FilmRail country={country} rail={rail} services={services} />
+      {rail === "ott" ? (
+        <PlatformChips country={country} active={activePlatform} qs={qs} />
+      ) : null}
+
+      <Suspense
+        key={`${rail}:${activePlatform ?? "all"}`}
+        fallback={
+          <RailSkeleton
+            label={rail === "theatrical" ? "Fetching cinema listings" : "Fetching streaming titles"}
+          />
+        }
+      >
+        <FilmRail
+          country={country}
+          rail={rail}
+          platform={activePlatform}
+          services={services}
+        />
       </Suspense>
 
-      <Suspense fallback={<RailSkeleton label="Fetching upcoming releases" />}>
-        <ComingSoonPreview country={country} qs={qs} />
-      </Suspense>
+      {/* Coming Soon is a THEATRICAL rail — upcoming cinema releases. It was
+          rendering under "On streaming" too, which put cinema dates in a
+          streaming context and blurred the split the two rails exist to keep. */}
+      {rail === "theatrical" ? (
+        <Suspense fallback={<RailSkeleton label="Fetching upcoming releases" />}>
+          <ComingSoonPreview country={country} qs={qs} />
+        </Suspense>
+      ) : null}
 
       <div className="px-[var(--board-gutter)] pt-6">
         <Attribution sources={["tmdb", "omdb"]} />
       </div>
     </>
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * Trailers
+ * ------------------------------------------------------------------ */
+
+function TrailerMode() {
+  return (
+    <>
+      <Suspense fallback={<RailSkeleton label="Fetching India trailers" />}>
+        <TrailerRail scope="india" />
+      </Suspense>
+      <Suspense fallback={<RailSkeleton label="Fetching international trailers" />}>
+        <TrailerRail scope="international" />
+      </Suspense>
+      <div className="px-[var(--board-gutter)] pt-6">
+        <Attribution sources={["tmdb", "youtube"]} />
+      </div>
+    </>
+  );
+}
+
+async function TrailerRail({ scope }: { readonly scope: TrailerScope }) {
+  const trailers = await fetchTrailers(scope, 10);
+  const missing = missingTrailerSources();
+  const label = scope === "india" ? "India" : "International";
+
+  return (
+    <section aria-labelledby={`trailers-${scope}`}>
+      <SectionHead
+        eyebrow={`Trailers · ${label}`}
+        title={scope === "india" ? "Top Indian trailers" : "Top international trailers"}
+        titleId={`trailers-${scope}`}
+        meta={
+          trailers.length > 0 ? (
+            <>
+              <LastChecked fetchedAt={trailers[0].fetchedAt} stale={false} />
+              {/* State the rule the list obeys. "Top" means nothing on its own,
+                  and the reader should not have to infer the window. */}
+              <p className="mt-1 max-w-prose text-[11px] text-muted">
+                {/* The number and its unit are one expression on purpose. Split
+                    as `{DAYS} days`, a line wrap between them strips the space
+                    and it renders "30days". */}
+                Ranked by YouTube view count. Trailers and teasers published in
+                the last {`${TRAILER_WINDOW_DAYS} days`}, one per film — a
+                film&rsquo;s most-watched recent trailer represents it.
+              </p>
+            </>
+          ) : null
+        }
+      />
+      {trailers.length === 0 ? (
+        <EmptyRail
+          title={`No ${label.toLowerCase()} trailers in the last ${TRAILER_WINDOW_DAYS} days`}
+          body={
+            missing.length > 0
+              ? `This rail needs both ${missing.join(" and ")}, which ${
+                  missing.length > 1 ? "are" : "is"
+                } not connected. Nothing was asked of ${
+                  missing.length > 1 ? "them" : "it"
+                } — this is not a source reporting an empty result.`
+              : `TMDB lists no trailer published in the last ${TRAILER_WINDOW_DAYS} days for the films it is tracking here. Indian release schedules in particular publish trailers in bursts, so this rail can genuinely be thin.`
+          }
+        />
+      ) : (
+        <div className="rail">
+          {trailers.map((trailer, index) => (
+            <TrailerCard key={trailer.key} trailer={trailer} rank={index + 1} />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -750,10 +1003,12 @@ function RailSkeleton({ label }: { readonly label: string }) {
 async function FilmRail({
   country,
   rail,
+  platform,
   services,
 }: {
   readonly country: string;
   readonly rail: "theatrical" | "ott";
+  readonly platform?: string;
   readonly services: readonly string[];
 }) {
   /**
@@ -766,8 +1021,12 @@ async function FilmRail({
    */
   const [theatrical, ott] = await Promise.all([
     theatricalBoard(country, 20),
-    ottBoard(country, 20),
+    ottBoard(country, 20, platform),
   ]);
+
+  const service = platform
+    ? WATCH_PROVIDERS.find((p) => p.platform === platform)
+    : undefined;
 
   const board = rail === "theatrical" ? theatrical : ott;
   const other = rail === "theatrical" ? ott : theatrical;
@@ -776,8 +1035,13 @@ async function FilmRail({
   const eyebrow =
     rail === "theatrical"
       ? `In cinemas · ${countryName(country)}`
-      : `Streaming · ${countryName(country)}`;
-  const title = rail === "theatrical" ? "Playing now" : "Trending on streaming";
+      : `${service ? service.name : "Streaming"} · ${countryName(country)}`;
+  const title =
+    rail === "theatrical"
+      ? "Playing now"
+      : service
+        ? `Top on ${service.name}`
+        : "Trending on streaming";
 
   return (
     <section aria-labelledby="film-rail">
@@ -805,7 +1069,9 @@ async function FilmRail({
           title={
             rail === "theatrical"
               ? "No cinema listings for your region"
-              : "No confirmed streaming titles for your region"
+              : service
+                ? `Nothing listed on ${service.name} here`
+                : "No confirmed streaming titles for your region"
           }
           body={board.note ?? "Nothing came back from TMDB for this rail."}
           action={{ label: "Change region", href: "/preferences" }}
@@ -814,7 +1080,12 @@ async function FilmRail({
         <div className="rail">
           {board.films.map((film) => (
             <div key={film.key} className="flex flex-col">
-              <FilmCard film={film} services={services} stale={board.stale} />
+              <FilmCard
+                film={film}
+                services={services}
+                stale={board.stale}
+                leadPlatform={service?.platform}
+              />
               {alsoIn.has(film.tmdbId) ? (
                 <p className="mt-1 w-[164px] text-[10px] leading-tight text-gold sm:w-[184px]">
                   Also {rail === "theatrical" ? "streaming" : "in cinemas"}

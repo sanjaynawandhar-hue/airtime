@@ -54,9 +54,17 @@ function PlayCount({ track }: { readonly track: TrackRecord }) {
 export function TrackCard({
   track,
   stale = false,
+  showRank = true,
 }: {
   readonly track: TrackRecord;
   readonly stale?: boolean;
+  /**
+   * Off for search results. `rank` there is Apple's relevance ordering, and
+   * rendering it in the chart numeral — the same numeral the boards use for a
+   * real chart position — would present relevance as a ranking no source
+   * published.
+   */
+  readonly showRank?: boolean;
 }) {
   const artwork = track.artworkUrl;
   const preview = track.previewUrl;
@@ -66,12 +74,14 @@ export function TrackCard({
     <article className="group relative flex w-full items-center gap-3 border border-surface-hi/60 bg-surface py-2.5 pl-9 pr-2.5 transition-colors hover:border-gold/50 sm:w-[290px]">
       {/* Rank, bled off the left edge. Decorative duplication — the accessible
           name below carries the position. */}
-      <span
-        aria-hidden="true"
-        className="rank-numeral pointer-events-none absolute -left-1.5 top-1/2 -translate-y-1/2 select-none text-[44px] text-paper/15"
-      >
-        {track.rank}
-      </span>
+      {showRank ? (
+        <span
+          aria-hidden="true"
+          className="rank-numeral pointer-events-none absolute -left-1.5 top-1/2 -translate-y-1/2 select-none text-[44px] text-paper/15"
+        >
+          {track.rank}
+        </span>
+      ) : null}
 
       {isOk(artwork) ? (
         <Image
@@ -93,7 +103,7 @@ export function TrackCard({
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13px] font-semibold leading-tight text-paper">
-          <span className="sr-only">Number {track.rank}: </span>
+          {showRank ? <span className="sr-only">Number {track.rank}: </span> : null}
           {track.title}
         </p>
         <p className="truncate text-[12px] leading-tight text-muted">{track.artist}</p>

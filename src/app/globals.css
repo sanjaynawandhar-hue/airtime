@@ -22,19 +22,21 @@
    * pink = rising or in cinemas, teal = falling or on streaming.
    *
    * The accents are deliberately deeper than their dark-theme versions —
-   * measured, not guessed. #FF2E63 on a light ground is only 4.12:1, which
-   * fails AA for body text. These values clear 4.5:1 on the ground, on a white
-   * card, AND with white type on top of them, so a chip works either way round.
+   * measured, not guessed. Deepening the ground alone breaks them: at this
+   * ground a #CC0D53 flare drops to 4.33:1 and fails AA, so the accents were
+   * darkened with it. Every value clears 4.5:1 on the ground, on a white card,
+   * AND with white type on top, so a chip works either way round. Tightest
+   * pair in use is flare-on-ground at 5.44:1.
    */
-  --color-ink: #f4f1fe;
+  --color-ink: #e5dff7;
   --color-ink-deep: #14082b;
   --color-surface: #ffffff;
-  --color-surface-hi: #ded5f5;
-  --color-flare: #cc0d53;
-  --color-cool: #077a77;
-  --color-gold: #945900;
-  --color-paper: #1e1033;
-  --color-muted: #655683;
+  --color-surface-hi: #c9bde9;
+  --color-flare: #b00b47;
+  --color-cool: #05605d;
+  --color-gold: #7d4a00;
+  --color-paper: #1a0d2e;
+  --color-muted: #574a75;
 
   --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
@@ -187,6 +189,37 @@ textarea {
     transparent 2px,
     transparent 6px
   );
+}
+
+/**
+ * Raised control — a hard offset block rather than a blurred drop shadow.
+ *
+ * The header actions were outlined in --muted on a light ground and read as
+ * disabled. This gives them physical weight while staying inside the design's
+ * hard-edged vocabulary: no gaussian blur, no gradient, just a solid offset
+ * that collapses when pressed so the button visibly travels.
+ */
+.raised {
+  box-shadow: 3px 3px 0 0 var(--color-ink-deep);
+  transition:
+    box-shadow 0.12s var(--ease-board),
+    transform 0.12s var(--ease-board);
+}
+.raised:hover {
+  box-shadow: 4px 4px 0 0 var(--color-ink-deep);
+  transform: translate(-1px, -1px);
+}
+.raised:active {
+  box-shadow: 1px 1px 0 0 var(--color-ink-deep);
+  transform: translate(2px, 2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raised,
+  .raised:hover,
+  .raised:active {
+    transform: none !important;
+  }
 }
 
 /* ------------------------------------------------------------------ *

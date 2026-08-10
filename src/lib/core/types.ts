@@ -115,6 +115,7 @@ export type PlatformId =
   | "sonyliv"
   | "zee5"
   | "appletv"
+  | "lionsgate"
   | "youtube"
   | "apple-music"
   | "spotify"

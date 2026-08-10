@@ -360,6 +360,114 @@ function fromLegacyEntry(
 }
 
 /* ------------------------------------------------------------------ *
+ * Search
+ * ------------------------------------------------------------------ */
+
+/** Apple caps `limit` at 200; we ask for far less because nobody reads 200. */
+const MAX_SEARCH_RESULTS = 25;
+
+/**
+ * Turn one Search API row into a TrackRecord.
+ *
+ * `rank` here is Apple's relevance ordering, NOT a chart position, and the
+ * search UI labels it as such — presenting a relevance index as a chart rank
+ * would be inventing a ranking that no source published.
+ */
+function searchResultToTrack(
+  item: ItunesTrack,
+  rank: number,
+  fetchedAt: string,
+): TrackRecord | null {
+  const sourceId = typeof item.trackId === "number" ? String(item.trackId) : "";
+  const title = item.trackName?.trim() ?? "";
+  const artist = item.artistName?.trim() ?? "";
+  if (sourceId === "" || title === "" || artist === "") return null;
+
+  const pageUrl = item.trackViewUrl?.trim() ?? "";
+  const artwork = fromText(item.artworkUrl100);
+  const provenance: Provenance = { source: "itunes", fetchedAt, sourceUrl: pageUrl };
+
+  const price =
+    typeof item.trackPrice === "number" && item.trackPrice >= 0 && item.currency
+      ? ok(`${item.trackPrice} ${item.currency}`)
+      : unavailable<string>("not_in_source");
+
+  const genre = item.primaryGenreName?.trim() ?? "";
+
+  return {
+    key: `itunes:${sourceId}`,
+    sourceId,
+    title,
+    artist,
+    album: fromText(item.collectionName),
+    artworkUrl:
+      artwork.status === "ok" ? ok(upscaleAppleArtwork(artwork.value)) : artwork,
+    previewUrl: fromText(item.previewUrl),
+    rank,
+    // A search result has no chart history and no play count. Both stay absent
+    // rather than being filled with a zero the card would then render.
+    movement: unavailable("not_in_source"),
+    playCount: unavailable("not_in_source"),
+    genres: genre === "" ? [] : [genre],
+    releaseDate: fromText(item.releaseDate),
+    links: pageUrl === "" ? [] : [itunesDeepLink(pageUrl, provenance, price, "buy")],
+    provenance,
+  };
+}
+
+/**
+ * Search Apple's catalogue for a song, by title, artist, or both.
+ *
+ * Why iTunes Search and not one of the chart providers: it is a single global
+ * catalogue covering Indian and international releases alike, it needs no key,
+ * and it returns a 30-second preview plus a canonical Apple Music URL — so a
+ * result is immediately playable and immediately linkable. Last.fm's
+ * track.search returns no audio and no artwork worth showing, and Deezer's
+ * catalogue is materially thinner for Indian-language music.
+ *
+ * `country` selects the storefront, which is what makes the same query return
+ * region-appropriate releases and prices.
+ */
+export async function searchTracks(
+  term: string,
+  country: CountryCode,
+  limit = MAX_SEARCH_RESULTS,
+): Promise<readonly TrackRecord[]> {
+  if (!providerEnabled.itunes) return [];
+
+  const query = term.trim();
+  if (query === "") return [];
+
+  const cc = country.trim().toUpperCase();
+  const url = buildUrl(SEARCH_URL, {
+    term: query,
+    entity: "song",
+    media: "music",
+    limit: Math.max(1, Math.min(limit, MAX_SEARCH_RESULTS)),
+    country: cc,
+  });
+
+  const outcome = await limited(() =>
+    fetchJson<ItunesResponse>({
+      source: "itunes",
+      url,
+      // Short window: a search result page is a live query, not a daily board.
+      revalidate: 60 * 15,
+      tags: ["music:itunes:search"],
+    }),
+  );
+
+  if (!outcome.ok) return [];
+
+  const tracks: TrackRecord[] = [];
+  for (const item of outcome.data.results ?? []) {
+    const track = searchResultToTrack(item, tracks.length + 1, outcome.fetchedAt);
+    if (track) tracks.push(track);
+  }
+  return tracks;
+}
+
+/* ------------------------------------------------------------------ *
  * Enrichment
  * ------------------------------------------------------------------ */
 

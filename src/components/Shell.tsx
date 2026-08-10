@@ -18,6 +18,7 @@ function buildCommands(country: string): readonly Command[] {
     { id: "home-cinema", label: "In cinemas now", group: "Go to", href: "/?mode=film&rail=theatrical" },
     { id: "home-ott", label: "On streaming", group: "Go to", href: "/?mode=film&rail=ott" },
     { id: "home-podcast", label: "Podcasts", group: "Go to", href: "/?mode=podcast" },
+    { id: "home-trailer", label: "Trailers by views", group: "Go to", href: "/?mode=trailer" },
     { id: "coming", label: "Coming soon to cinemas", group: "Go to", href: "/coming-soon" },
     { id: "top-intl", label: "Top rated worldwide", group: "Go to", href: "/top-rated/international" },
     { id: "top-in", label: "Top rated Indian cinema", group: "Go to", href: "/top-rated/indian" },
@@ -67,7 +68,7 @@ export function Header({ country }: { readonly country: string }) {
   return (
     <header className="sticky top-0 z-40 border-b border-surface-hi bg-ink/95 backdrop-blur-none">
       <div className="flex items-center justify-between gap-4 px-[var(--board-gutter)] py-3">
-        <Link href="/" className="flex items-baseline gap-2">
+        <Link href="/" className="flex min-w-0 items-baseline gap-2">
           <span className="display text-xl text-paper sm:text-2xl">Airtime</span>
           <span
             className="animate-live inline-block h-1.5 w-1.5 bg-flare"
@@ -76,17 +77,26 @@ export function Header({ country }: { readonly country: string }) {
           <span className="sr-only">— live charts</span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <CommandPalette commands={buildCommands(country)} />
+          {/* Hidden on the narrowest phones: the Instagram link is also in the
+              footer, and the region control must not be clipped for it. */}
           <InstagramLink
             showHandle={false}
             size={16}
-            className="border border-surface-hi px-2.5 py-[7px] text-muted hover:border-flare"
+            className="raised hidden border-2 border-ink-deep bg-surface px-2.5 py-[7px] text-paper min-[400px]:inline-flex"
           />
+          {/* The region control. Everything region-dependent on the site keys
+              off this: which country's cinema listings and streaming
+              availability you see, which release dates and certifications, and
+              which storefront the music charts come from. Labelled rather than
+              left as a bare country name, which read as decoration. */}
           <Link
             href="/preferences"
-            className="border border-surface-hi px-3 py-1.5 text-[12px] text-muted transition-colors hover:border-gold hover:text-gold"
+            className="raised flex shrink-0 items-center gap-1.5 border-2 border-ink-deep bg-surface px-2.5 py-[7px] text-[12px] font-semibold text-paper sm:px-3"
           >
+            <span className="eyebrow hidden text-muted sm:inline">Region</span>
+            <span className="sr-only">Region: </span>
             {countryName}
           </Link>
         </div>
@@ -101,13 +111,22 @@ export function ModeToggle({
   mode,
   qs = "",
 }: {
-  readonly mode: "music" | "film" | "podcast";
+  readonly mode: "music" | "film" | "podcast" | "trailer";
   readonly qs?: string;
 }) {
+  const label = {
+    music: "Music",
+    film: "Film",
+    podcast: "Podcast",
+    trailer: "Trailer",
+  } as const;
+
   return (
+    // Wraps on phones: four items no longer fit one line at 375px, and a
+    // horizontally clipped nav is worse than a two-row one.
     <nav aria-label="Content type" className="px-[var(--board-gutter)] pt-5">
-      <div className="inline-flex border border-surface-hi">
-        {(["music", "film", "podcast"] as const).map((value) => (
+      <div className="inline-flex flex-wrap border border-surface-hi">
+        {(["music", "film", "trailer", "podcast"] as const).map((value) => (
           <Link
             key={value}
             href={`/?mode=${value}${qs}`}
@@ -118,7 +137,7 @@ export function ModeToggle({
                 : "text-muted hover:text-paper"
             }`}
           >
-            {value === "music" ? "Music" : value === "film" ? "Film" : "Podcast"}
+            {label[value]}
           </Link>
         ))}
       </div>

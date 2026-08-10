@@ -8,6 +8,7 @@ import tmdbProvider, {
   fetchUpcoming,
 } from "@/lib/providers/tmdb";
 import { fetchRatingsBatch } from "@/lib/providers/omdb";
+import { WATCH_PROVIDERS } from "@/lib/core/config";
 import { computeDivergence } from "@/lib/rank/divergence";
 import {
   computeMovement,
@@ -169,10 +170,34 @@ export async function theatricalBoard(
  * OTT
  * ------------------------------------------------------------------ */
 
-export async function ottBoard(country: CountryCode, limit = 20): Promise<Board> {
-  const films = await fetchOtt(country, limit);
+/**
+ * @param platform  A PlatformId from WATCH_PROVIDERS. Narrows the rail to one
+ *   service using TMDB's own `with_watch_providers` filter, so the result is
+ *   still TMDB confirming availability rather than us filtering a general list
+ *   and hoping. An unknown platform is ignored rather than returning nothing.
+ */
+export async function ottBoard(
+  country: CountryCode,
+  limit = 20,
+  platform?: string,
+): Promise<Board> {
+  const provider = platform
+    ? WATCH_PROVIDERS.find((p) => p.platform === platform)
+    : undefined;
+
+  const films = await fetchOtt(
+    country,
+    limit,
+    provider ? [provider.tmdbProviderId] : undefined,
+  );
 
   if (films.length === 0) {
+    if (provider) {
+      return emptyFor(
+        `TMDB has nothing currently trending on ${provider.name} in this country. ` +
+          `That is TMDB's availability data saying no, not a failed request.`,
+      );
+    }
     return emptyFor(
       "No streaming titles confirmed available in this country right now. " +
         "We only list a film here once TMDB's watch-providers data says it is " +
@@ -181,7 +206,12 @@ export async function ottBoard(country: CountryCode, limit = 20): Promise<Board>
   }
 
   const enriched = await enrichRatings(films);
-  const ranked = await withMovement(`tmdb:${country}:ott`, enriched);
+  // Snapshot key includes the platform so a per-service rail never compares
+  // its ranks against the unfiltered one.
+  const ranked = await withMovement(
+    `tmdb:${country}:ott${provider ? `:${provider.platform}` : ""}`,
+    enriched,
+  );
 
   return {
     films: ranked,

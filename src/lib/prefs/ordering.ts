@@ -79,6 +79,7 @@ export const PLATFORM_NAME: Record<PlatformId, string> = {
   sonyliv: "SonyLIV",
   zee5: "ZEE5",
   appletv: "Apple TV+",
+  lionsgate: "Lionsgate Play",
   youtube: "YouTube",
   "apple-music": "Apple Music",
   spotify: "Spotify",

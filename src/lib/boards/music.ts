@@ -374,6 +374,66 @@ export type { LastfmArtist };
  * because an album chart position and a song chart position are different
  * measurements and interleaving them would produce a ranking Apple never made.
  */
+/* ------------------------------------------------------------------ *
+ * Released this year
+ * ------------------------------------------------------------------ */
+
+export const CURRENT_YEAR = new Date().getFullYear();
+
+/**
+ * The current chart, narrowed to songs actually RELEASED this year.
+ *
+ * Read the title carefully, because the distinction matters and the UI repeats
+ * it: this is not "the most played songs of 2026". Neither Apple nor YouTube
+ * publishes a year-to-date play ranking, so such a list could only be
+ * fabricated by us. What both DO publish is a live chart, and every entry
+ * carries a real release date — so "what is on the chart right now, released
+ * this year" is a fact we can stand behind, computed entirely from source data.
+ *
+ * The chart is fetched deep (100 for Apple, YouTube's 50 ceiling) and then
+ * filtered, because taking the top 20 first would leave only a handful of
+ * current-year songs. Positions are renumbered 1..N over the filtered set and
+ * the UI states that the ranking is within this year's releases.
+ */
+export async function releasedThisYearBoard(params: {
+  readonly source: Extract<MusicSourceId, "apple-music" | "youtube">;
+  readonly country: CountryCode;
+  readonly limit?: number;
+  readonly year?: number;
+}): Promise<MusicBoard> {
+  const { source, country, limit = 10, year = CURRENT_YEAR } = params;
+
+  // Apple's feed serves 100; YouTube's videos.list caps maxResults at 50.
+  const depth = source === "apple-music" ? 100 : 50;
+  const board = await musicBoard({ source, country, limit: depth });
+
+  const prefix = String(year);
+  const thisYear = board.tracks.filter(
+    (track) => isOk(track.releaseDate) && track.releaseDate.value.startsWith(prefix),
+  );
+
+  const renumbered = thisYear
+    .slice(0, limit)
+    // Chart order is preserved; only the visible numbering is recomputed, so
+    // rank 1 means "highest-charting {year} release", not "biggest song of {year}".
+    .map((track, index) => ({ ...track, rank: index + 1 }));
+
+  return {
+    ...board,
+    title:
+      source === "apple-music"
+        ? `Apple Music chart · ${year} releases`
+        : `YouTube chart · ${year} releases`,
+    tracks: renumbered,
+    note:
+      renumbered.length === 0
+        ? board.note ??
+          `Nothing on this chart right now was released in ${year}. That is the ` +
+            `chart's own release dates, not a failed request.`
+        : null,
+  };
+}
+
 export async function appleFeedBoard(params: {
   readonly kind: "albums" | "music-videos";
   readonly country: CountryCode;
@@ -432,12 +492,14 @@ export async function appleFeedBoard(params: {
  * genre name.
  */
 export const GENRES: readonly { readonly slug: string; readonly label: string }[] = [
+  // Bollywood leads: India is the primary market, so it sits directly beside
+  // "All" rather than fifth behind four Western genres.
+  { slug: "bollywood", label: "Bollywood" },
+  { slug: "punjabi", label: "Punjabi" },
   { slug: "pop", label: "Pop" },
   { slug: "hip-hop", label: "Hip-hop" },
   { slug: "rock", label: "Rock" },
   { slug: "electronic", label: "Electronic" },
-  { slug: "bollywood", label: "Bollywood" },
-  { slug: "punjabi", label: "Punjabi" },
   { slug: "tamil", label: "Tamil" },
   { slug: "indie", label: "Indie" },
   { slug: "r&b", label: "R&B" },

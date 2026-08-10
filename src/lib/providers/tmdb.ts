@@ -653,22 +653,38 @@ export async function fetchTheatrical(
  * Rail 2 — OTT
  * ------------------------------------------------------------------ */
 
-const PLATFORM_IDS: ReadonlySet<string> = new Set<PlatformId>([
-  "netflix",
-  "prime",
-  "jiohotstar",
-  "sonyliv",
-  "zee5",
-  "appletv",
-  "youtube",
-  "apple-music",
-  "spotify",
-  "deezer",
-  "gaana",
-  "bookmyshow",
-  "tmdb",
-  "imdb",
-]);
+/**
+ * Every PlatformId, as a runtime lookup.
+ *
+ * Written as an exhaustive Record rather than a Set of strings so that adding a
+ * member to the PlatformId union FAILS THE BUILD until it is listed here. A Set
+ * cannot do that — a missing entry is not a type error, it just silently makes
+ * `toPlatformId` return null for a real platform.
+ *
+ * That is not hypothetical: adding "lionsgate" to the union and to the provider
+ * allowlist left this list untouched, so every Lionsgate Play offer was dropped
+ * on the floor and the Lionsgate rail rendered permanently empty while TMDB was
+ * returning 402 titles for it.
+ */
+const PLATFORM_ID_SET: Record<PlatformId, true> = {
+  netflix: true,
+  prime: true,
+  jiohotstar: true,
+  sonyliv: true,
+  zee5: true,
+  appletv: true,
+  lionsgate: true,
+  youtube: true,
+  "apple-music": true,
+  spotify: true,
+  deezer: true,
+  gaana: true,
+  bookmyshow: true,
+  tmdb: true,
+  imdb: true,
+};
+
+const PLATFORM_IDS: ReadonlySet<string> = new Set(Object.keys(PLATFORM_ID_SET));
 
 function toPlatformId(value: string): PlatformId | null {
   return PLATFORM_IDS.has(value) ? (value as PlatformId) : null;
@@ -754,21 +770,54 @@ export async function fetchOtt(
   if (wanted === 0) return [];
 
   const region = country.toUpperCase();
-  const tags = [tag.ott(country)];
-  const ids =
-    providerIds && providerIds.length > 0
-      ? providerIds
-      : WATCH_PROVIDERS.filter((entry) => entry.regions.includes(region)).map(
-          (entry) => entry.tmdbProviderId,
-        );
 
-  const requests: Array<Promise<FetchOutcome<TmdbPaged<TmdbMovieListItem>>>> = [
-    get<TmdbPaged<TmdbMovieListItem>>(
-      buildUrl(`${API}/trending/movie/week`, { language: "en-US" }),
-      REVALIDATE.ott,
-      tags,
-    ),
-  ];
+  /**
+   * Whether the caller asked for ONE service rather than "anything streaming".
+   * This changes the rail's meaning, so it changes two things below: the
+   * unfiltered trending list is not merged in, and every surviving record must
+   * carry a confirmed offer on the requested service.
+   */
+  const narrowed = Boolean(providerIds && providerIds.length > 0);
+
+  const tags = narrowed
+    ? [tag.ott(country), `tmdb:ott:${region}:${[...providerIds!].sort().join("-")}`]
+    : [tag.ott(country)];
+
+  const ids = narrowed
+    ? providerIds!
+    : WATCH_PROVIDERS.filter((entry) => entry.regions.includes(region)).map(
+        (entry) => entry.tmdbProviderId,
+      );
+
+  /**
+   * The platforms a record must actually be on to belong in this rail.
+   *
+   * Enforced against each film's own /watch/providers response further down,
+   * not against the discover filter. Without this the rail was a lie: because
+   * the trending list below is not provider-filtered, "Top on Netflix" was
+   * rendering cards reading "Included on Amazon Prime Video" — the exact
+   * failure of letting one rail inherit another's availability.
+   */
+  const requiredPlatforms = narrowed
+    ? new Set(
+        providerIds!
+          .map((id) => PLATFORM_BY_TMDB_ID.get(id))
+          .filter((p): p is NonNullable<typeof p> => Boolean(p)),
+      )
+    : null;
+
+  const requests: Array<Promise<FetchOutcome<TmdbPaged<TmdbMovieListItem>>>> = [];
+
+  // Global trending is not provider-aware, so it only belongs in the broad rail.
+  if (!narrowed) {
+    requests.push(
+      get<TmdbPaged<TmdbMovieListItem>>(
+        buildUrl(`${API}/trending/movie/week`, { language: "en-US" }),
+        REVALIDATE.ott,
+        tags,
+      ),
+    );
+  }
   if (ids.length > 0) {
     requests.push(
       get<TmdbPaged<TmdbMovieListItem>>(
@@ -810,7 +859,9 @@ export async function fetchOtt(
   merged.sort((a, b) => valueOr(fromNumeric(b.popularity), 0) - valueOr(fromNumeric(a.popularity), 0));
 
   // Bound the confirmation fan-out: many candidates will not be streaming here.
-  const candidates = merged.slice(0, Math.min(merged.length, wanted * 3));
+  // A single-service rail rejects more of them, so it needs a deeper pool.
+  const poolFactor = narrowed ? 5 : 3;
+  const candidates = merged.slice(0, Math.min(merged.length, wanted * poolFactor));
 
   const confirmations = await mapLimited(candidates, CONCURRENCY, async (item) => {
     const outcome = await get<TmdbWatchProvidersResponse>(
@@ -836,6 +887,15 @@ export async function fetchOtt(
     const confirmation = confirmations[index];
     // No entry for this country -> dropped from the OTT rail entirely.
     if (!confirmation) return;
+
+    // Single-service rail: TMDB's own offers for this film in this country must
+    // name the service. Anything else is dropped rather than relabelled.
+    if (
+      requiredPlatforms &&
+      !confirmation.offers.some((offer) => requiredPlatforms.has(offer.platform))
+    ) {
+      return;
+    }
 
     const availability: OttContext = {
       kind: "ott",

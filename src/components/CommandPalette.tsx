@@ -111,10 +111,17 @@ export function CommandPalette({ commands }: { readonly commands: readonly Comma
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 border border-surface-hi px-3 py-1.5 text-[12px] text-muted transition-colors hover:border-gold hover:text-gold"
+        // Icon-only below sm. At 375px the full label plus the region control
+        // pushed the header past the viewport and clipped "Region India".
+        className="raised flex shrink-0 items-center gap-2 border-2 border-ink-deep bg-gold px-2.5 py-[7px] text-[12px] font-semibold text-ink sm:px-3"
+        aria-label="Jump to…"
       >
-        <span>Jump to…</span>
-        <kbd className="hidden border border-surface-hi px-1 py-0.5 text-[10px] sm:inline">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <circle cx="7" cy="7" r="5" />
+          <path d="M11 11l4 4" strokeLinecap="round" />
+        </svg>
+        <span className="hidden sm:inline">Jump to…</span>
+        <kbd className="hidden border border-ink/40 px-1 py-0.5 text-[10px] md:inline">
           ⌘K
         </kbd>
       </button>

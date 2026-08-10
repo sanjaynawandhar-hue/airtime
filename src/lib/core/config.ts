@@ -68,6 +68,12 @@ export const REVALIDATE = {
   watchProviders: 60 * 60 * 24,
   /** YouTube review shelf: weekly. */
   videoReviews: 60 * 60 * 24 * 7,
+  /**
+   * Trailers: 6h. View counts on a fresh trailer move fast enough that a daily
+   * window would show visibly stale numbers, but the rail costs ~60 TMDB calls
+   * to build, so it is not something to rebuild on every request.
+   */
+  trailers: 60 * 60 * 6,
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -283,6 +289,7 @@ export const WATCH_PROVIDERS: readonly WatchProviderConfig[] = [
   { tmdbProviderId: 237, platform: "sonyliv", name: "SonyLIV", regions: ["IN"] },
   { tmdbProviderId: 232, platform: "zee5", name: "ZEE5", regions: ["IN"] },
   { tmdbProviderId: 350, platform: "appletv", name: "Apple TV+", regions: ["IN", "US", "GB"] },
+  { tmdbProviderId: 561, platform: "lionsgate", name: "Lionsgate Play", regions: ["IN"] },
 ];
 
 /* ------------------------------------------------------------------ *

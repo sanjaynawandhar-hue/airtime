@@ -21,9 +21,20 @@ import { OFFER_LABEL, isExtraCost, orderLinks } from "@/lib/prefs/ordering";
 function AvailabilityLine({
   availability,
   services,
+  leadPlatform,
 }: {
   readonly availability: AvailabilityContext | null;
   readonly services: readonly string[];
+  /**
+   * The service this rail is filtered to, if any. Its offer leads the line.
+   *
+   * Without it a card on the "Top on Netflix" rail read "Included on Amazon
+   * Prime Video" — true of the film, wrong for the rail, and precisely the
+   * kind of mismatched availability claim the two rails exist to prevent. The
+   * record is only in a filtered rail because TMDB confirmed this platform, so
+   * leading with it is the accurate statement, not a preferred one.
+   */
+  readonly leadPlatform?: string;
 }) {
   if (!availability) {
     return (
@@ -60,7 +71,9 @@ function AvailabilityLine({
   }
 
   const ordered = orderLinks(availability.offers, services);
-  const best = ordered[0];
+  const best =
+    (leadPlatform ? ordered.find((o) => o.platform === leadPlatform) : undefined) ??
+    ordered[0];
 
   if (!best) {
     // Should not reach the OTT rail at all without an offer, but if a record
@@ -95,11 +108,14 @@ export function FilmCard({
   services = [],
   stale = false,
   showRank = true,
+  leadPlatform,
 }: {
   readonly film: FilmRecord;
   readonly services?: readonly string[];
   readonly stale?: boolean;
   readonly showRank?: boolean;
+  /** Set on a single-service streaming rail. See AvailabilityLine. */
+  readonly leadPlatform?: string;
 }) {
   const poster = film.posterUrl;
   const rank = film.rank;
@@ -154,7 +170,11 @@ export function FilmCard({
       </Link>
 
       <div className="mt-1 flex flex-col gap-1">
-        <AvailabilityLine availability={film.availability} services={services} />
+        <AvailabilityLine
+          availability={film.availability}
+          services={services}
+          leadPlatform={leadPlatform}
+        />
         <div className="flex items-center justify-between gap-2">
           {lead && isOk(lead.value) ? (
             <span className="text-[11px] text-muted">
