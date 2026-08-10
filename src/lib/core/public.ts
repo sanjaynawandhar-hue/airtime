@@ -21,20 +21,28 @@ export const REVIEW_LIMITS = {
 
 /**
  * Brand identity. Every place the handle or a social link appears reads from
- * here, so correcting one of these values updates the header, the footer, the
- * title pages and the page metadata at once.
+ * here, so one edit updates the header, the footer and the page metadata.
  *
- * ⚠️ `instagramUrl` is DERIVED FROM THE HANDLE, not confirmed. Instagram
- * usernames are not guaranteed to match a display handle — `professorsk`,
- * `professor_sk` and `professorsk_` are all different accounts, and a public
- * product linking to the wrong one is worse than linking to none. Open the real
- * profile, copy the address bar, and paste it below.
+ * THE DISPLAY NAME AND THE ACCOUNT NAME ARE DIFFERENT ON PURPOSE.
+ *
+ *   brand           "@professorSK"        the nickname readers see
+ *   instagramHandle "iam_sanjay_navandar" the actual Instagram account
+ *
+ * They are not a mismatch to be tidied up. `brand` is presentation; the handle
+ * and URL are an identity claim that has to point at the real account, which is
+ * why `instagram:creator` and `rel="me"` use the handle rather than the
+ * nickname — crediting the wrong account is worse than crediting none.
+ *
+ * The URL is stored canonically, without the `igsh` and `utm_source=qr`
+ * parameters Instagram's share sheet appends. Those identify a share session,
+ * not the profile, and baking them into every page would send that token to
+ * Instagram on every click.
  */
 export const APP = {
   name: "Airtime",
   tagline: "What the world is playing, right now.",
   brand: "@professorSK",
-  handle: "professorSK",
-  instagramUrl: "https://www.instagram.com/professorsk/",
+  instagramHandle: "iam_sanjay_navandar",
+  instagramUrl: "https://www.instagram.com/iam_sanjay_navandar",
   defaultCountry: "IN",
 } as const;

@@ -48,7 +48,7 @@ export function InstagramLink({
       <InstagramGlyph size={size} />
       {showHandle ? <span>{APP.brand}</span> : null}
       <span className="sr-only">
-        {showHandle ? "" : APP.brand} on Instagram (opens in a new tab)
+        {APP.brand} on Instagram, @{APP.instagramHandle} (opens in a new tab)
       </span>
     </a>
   );

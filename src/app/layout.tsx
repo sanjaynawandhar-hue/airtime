@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   creator: APP.brand,
   authors: [{ name: APP.brand, url: APP.instagramUrl }],
   // Tells Instagram/X which account to credit when the link is shared.
-  other: { "instagram:creator": APP.brand },
+  other: { "instagram:creator": `@${APP.instagramHandle}` },
   openGraph: {
     title: `${APP.name} — ${APP.tagline}`,
     description:
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     siteName: APP.name,
     type: "website",
   },
-  twitter: { card: "summary_large_image", creator: APP.brand },
+  twitter: { card: "summary_large_image", creator: `@${APP.instagramHandle}` },
   robots: { index: true, follow: true },
 };
 
