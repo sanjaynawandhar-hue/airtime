@@ -7,7 +7,7 @@ export function normalizeQuery(value: string): string {
   if (q.length < 2 || q.length > 120) throw new SearchFailure('invalid_query',400,'Enter a song or artist name between 2 and 120 characters.');
   return q;
 }
-export interface YoutubeResult { id: string; title: string; channel: string; thumbnail: string | null }
+export interface YoutubeResult { id: string; title: string; channel: string; channelId?: string; thumbnail: string | null }
 export async function searchYoutube(query: string, key: string, fetcher: typeof fetch = fetch): Promise<YoutubeResult[]> {
   const q = normalizeQuery(query);
   if (!key) throw new SearchFailure('not_configured',503,'YouTube search is not configured.');
@@ -30,7 +30,7 @@ export async function searchYoutube(query: string, key: string, fetcher: typeof 
     const s = item?.snippet;
     if (typeof id !== 'string' || !/^[\w-]{11}$/.test(id) || typeof s?.title !== 'string') continue;
     const thumbnail = s.thumbnails?.medium?.url ?? s.thumbnails?.default?.url;
-    results.push({id,title:s.title,channel:typeof s.channelTitle === 'string' ? s.channelTitle : '',thumbnail:typeof thumbnail === 'string' && thumbnail.startsWith('https://i.ytimg.com/') ? thumbnail : null});
+    results.push({id,title:s.title,channelId:typeof s.channelId === 'string' ? s.channelId : undefined,channel:typeof s.channelTitle === 'string' ? s.channelTitle : '',thumbnail:typeof thumbnail === 'string' && thumbnail.startsWith('https://i.ytimg.com/') ? thumbnail : null});
   }
   return results;
 }

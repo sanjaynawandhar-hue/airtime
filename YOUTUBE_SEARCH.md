@@ -19,3 +19,11 @@ Validation:
 - `npm run build`
 
 Next.js and matching ESLint configuration were updated to 16.3.8 because the previous version had a critical advisory reported by npm audit. Remaining audit findings are outside this endpoint and require separate dependency maintenance.
+
+## Discovery
+
+`GET /api/music/discovery` supplies India YouTube music-chart videos, artist names from Apple's public songs chart, and canonical Apple playlist links. Video details retain the actual YouTube publisher IDs used by search. Non-embeddable videos are omitted. Apple playlist parsing allows the documented feed's missing artistName field rather than treating playlist rows as songs.
+
+MeloTint ranks For You and its own daily mixes locally using listening history; no history is uploaded. Apple playlist links open Apple Music. This does not enable MusicKit catalog streaming or Spotify playback.
+
+Additional checks: `node --import tsx --test src/lib/discovery-playlists.test.ts`; live endpoint returns 30 chart videos, 12 artists, and 12 playlists as of 2026-10-04.
